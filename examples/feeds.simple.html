@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Discovery Demo</title>
+	<script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
+	<script src="../lib/feeds.min.js"></script>
+	<link rel="stylesheet" href="css/feeds.css">
+
+<script>
+var clientKey = '<your_key>'; // Your key
+
+$(document).ready(function() {
+    $("#mostViewed").datajetFeed({
+        'feed': Datajet.feeds.mostViewed(),
+        'clientKey': clientKey,
+    });
+    $("#bestSellers").datajetFeed({
+        'feed': Datajet.feeds.bestsellers(),
+        'clientKey': clientKey,
+    });
+    
+    $("#bestDeals").datajetFeed({
+        'feed': Datajet.feeds.bestDeals(),
+        'clientKey': clientKey,
+    });
+
+    $("#lastViewed").datajetFeed({
+        'feed': Datajet.feeds.recentlyViewed(),
+        'clientKey': clientKey,
+    });
+
+    $("#specialDeals").datajetFeed({
+        'feed': Datajet.feeds.specialDeals(),
+        'clientKey': clientKey,
+    });
+});
+</script>
+
+<body>
+    <hr/>
+	<div id="container">
+		<div id="feeds">
+			<!-- Personalized feeds -->
+			<h1>Recently Viewed by You</h1>
+			<div id="lastViewed"></div>
+    <hr/>
+            <h1>Special Deals for You</h1>
+			<div id="specialDeals" ></div>
+    <hr/>
+			<!-- Global feeds -->
+			<h1>Today's Best Sellers</h1>
+			<div id="bestSellers"></div>
+    <hr/>
+			<h1>Best Deals today</h1>
+			<div id="bestDeals"><div>
+    <hr/>
+			<h1>Most Viewed Today</h1>
+			<div id="mostViewed"></div>
+    <hr/>
+	</div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Discovery Demo</title>
+    <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
+
+    <script src="../feeds/feeds.min.js"></script>
+    <link rel="stylesheet" href="css/feeds.css">
+
+    <script>
+        var clientKey = '<your_key>'; // Your key
+
+        $(document).ready(function () {
+            var renderCardBody = function (card, item, ctx) {
+                $.fn.datajetFeed.defaults.renderCardBody(card, item, ctx);
+                var method = 'default';
+                card.append($("<a/>", {
+                    href: "#",
+                    class: "cardMoreLikeThis",
+                    text: "More like this",
+                    id: "moreLikeThis",
+                    click: function (e) {
+                        e.stopPropagation();
+                        $('#related').animate({width: 'toggle'});
+                        $("#relatedItems").datajetFeed({
+                            'feed': Datajet.feeds.moreLikeThis(item.sku, method),
+                            'clientKey': clientKey,
+                            'resultCardHolder': '<li/>'
+                        });
+                    }
+                }));
+                card.append($("<a/>", {
+                    href: "#",
+                    class: "cardMoreLikeThis",
+                    text: "Bought together",
+                    id: "moreLikeThis",
+                    click: function (e) {
+                        e.stopPropagation();
+                        $('#related').animate({width: 'toggle'});
+                        $("#relatedItems").datajetFeed({
+                            'feed': Datajet.feeds.boughtTogether(item.sku),
+                            'clientKey': clientKey,
+                            'resultCardHolder': '<li/>'
+                        });
+                    }
+                }));
+                return card;
+            };
+
+            $("#bestSellers").datajetFeed({
+                'feed': Datajet.feeds.bestsellers(),
+                'clientKey': clientKey,
+                'resultCardHolder': '<li/>',
+                'renderCardBody': renderCardBody
+            });
+
+            $("#bestDeals").datajetFeed({
+                'feed': Datajet.feeds.bestDeals(),
+                'clientKey': clientKey,
+                'resultCardHolder': '<li/>',
+                'renderCardBody': renderCardBody
+            });
+
+            $("#mostViewed").datajetFeed({
+                'feed': Datajet.feeds.mostViewed(),
+                'clientKey': clientKey,
+                'resultCardHolder': '<li/>',
+                'renderCardBody': renderCardBody
+            });
+
+            $("#lastViewed").datajetFeed({
+                'feed': Datajet.feeds.recentlyViewed(),
+                'clientKey': clientKey,
+                'resultCardHolder': '<li/>',
+                'renderCardBody': renderCardBody
+            });
+
+            $("#specialDeals").datajetFeed({
+                'feed': Datajet.feeds.specialDeals(),
+                'clientKey': clientKey,
+                'resultCardHolder': '<li/>',
+                'renderCardBody': renderCardBody
+            });
+        });
+    </script>
+
+<body>
+
+<div id="header">
+    <div id="searchBar">
+        <input title="" id="suggestions" placeholder="Search for products, brands, categories" size="45">
+        <div>
+            <ol id="popularSearches"></ol>
+        </div>
+    </div>
+</div>
+<div id="container">
+    <div id="related"><h1 style="margin-top: 0;">Related Items</h1><a href="#" id="close-btn" class="close">Close</a>
+        <ol id="relatedItems"></ol>
+        <div id="noResultsRelatedItems"><h2>Sorry, no related items found.</h2></div>
+    </div>
+    <div id="feeds">
+        <!-- Personalized feeds -->
+        <h1>Recently Viewed by You</h1>
+        <ol id="lastViewed"></ol>
+        <div id="specialDealsView">
+            <h1>Special Deals for You</h1>
+            <ol id="specialDeals"></ol>
+        </div>
+        <!-- Global feeds -->
+        <h1>Today's Best Sellers</h1>
+        <ol id="bestSellers"></ol>
+        <h1>Best Deals today</h1>
+        <ol id="bestDeals"></ol>
+        <h1>Most Viewed Today</h1>
+        <ol id="mostViewed"></ol>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Datajet SDK demo</title>
+    <link rel="stylesheet" href="css/suggester.simple.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.3.0/prototype.js"></script>
+    <script src="../seer/seer.min.js"></script>
+    <script>
+
+        // This example shows how to use standalone version of SDK.
+        // Using prototype.js does not conflicts with it.
+        function init() {
+            var key = '<your_key>';
+            var suggest = Datajet.usw(key);
+
+            $('query').observe('keydown', function() {
+                suggest.get($('query').getValue(), function(items){
+                    $('results').update('');
+                    if (items == null) {
+                        return;
+                    }
+                    for (var i = 0; i < items.length; i++) {
+                        var item = items[i];
+                        var brand = 'br' in item ? item.br : '';
+                        $('results').insert('<li>$br $ti</li>'.replace('$br', brand).replace('$ti', item.ti));
+                    }
+                });
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function(event) { init(); });
+    </script>
+</head>
+
+<body>
+    <div id="lib"></div>
+    <div id="main">
+        <input type="text" class="typeahead" id='query'>
+        <ul id='results'></ul>
+    </div>
+</body>
+</html>

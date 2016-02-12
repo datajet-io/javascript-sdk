@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="hawk" id="html">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Demo</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="css/demo.css">
+
+    <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+
+    <script src="../seer/seer.min.js"></script>
+    <script src="../plugins/seer.jquery.min.js"></script>
+    <script src="lib/demo.js"></script>
+
+    <script>
+        imgUrl = "http://seer.sae.datajet.io/i";
+
+        /* suggester config */
+        var CLIENT_KEY = '0EvqpslI1Z8LQeroeHrqW3BJMQWlaw2'; // Your key to access hawk
+        var FEED_KEY = 'eNU8dsoL2vmD0XBxNLhaKHZbGxflaKE'; // Your key to access feeds and seer
+
+        var API_HOST = 'hawk.euw.datajet.io';
+        var suggest = Datajet.sae(FEED_KEY);
+    </script>
+
+    <script type="text/ng-template" id="feedItem.html">
+        <div class="thumbnail">
+            <a href="http://{{item.url}}">
+                <img ng-src="{{item.image}}" ng-show="item.image" style="height:200px;">
+            </a>
+            <div style="height:200px;" ng-hide="item.image">no image</div>
+            <div class="caption" style="height:108px;">
+                <div style="height:50px;">
+                    <a href="http://{{item.url}}">{{item.title | limitTo:50}}</a>
+                </div>
+                <div class="mltdiv"><a ng-click="moreLikeThis(item)">More like this</a></div>
+                <div>
+                    <span style="color:red">R$ {{item.special_price || item.price}}</span>
+                    <del ng-show="item.price" style="color:#959595; margin-left:5px;">R${{item.price}}</del>
+                    <span style="color:#959595" class="pull-right">{{item.brand}}</span>
+                </div>
+            </div>
+        </div>
+    </script>
+
+</head>
+
+<body role="document" ng-controller="SearchCtrl" ng-cloak>
+
+<div class="container theme-showcase" role="main">
+    <div class="row" style="margin-bottom:30; margin-top:15px;">
+        <div class="col-xs-4"></div>
+        <div class="col-xs-6">
+            <form>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="suggestions" name="q" ng-model="f.q"nplaceholder="Search for products...">
+                      <span class="input-group-btn button-container">
+                        <button class="btn btn-default" type="submit" ng-click="searchQ({})">Search!</button>
+                      </span>
+                    <div id="suggestionResults"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Related Products Modal -->
+    <div class="modal fade" id="relatedProductsModal" tabindex="-1" role="dialog"
+         aria-labelledby="relatedProductsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="relatedProductsModalLabel">Related Products</h4>
+                </div>
+                <div class="modal-body">
+                    <div ng-show="!relatedProducts">
+                        <h3>Sorry, no related items found.</h3>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 col-md-6" ng-repeat="item in relatedProducts" ng-include="'feedItem.html'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-6 col-md-3">
+
+            <script type="text/ng-template" id="cat_tree.html">
+                <a ng-click="clickCategory(row.id, row.deep)" ng-hide="fs.filter.category==row.id">{{row.text}}</a>
+                <span ng-show="fs.filter.category==row.id" style="margin-left:-18px;">
+              <a ng-click="clickCategory('', 0)">
+                  <i class="glyphicon glyphicon-ok"></i>
+              </a>
+              {{row.text}}
+            </span>
+                ({{row.count}})
+                <ul class="list-unstyled" style="padding-left:15px;">
+                    <li ng-repeat="row in row.items" ng-include="'cat_tree.html'"></li>
+                </ul>
+            </script>
+
+            <div ng-show="result.facets.category" id="categories" class="facet_block">
+                <h3 class="facet_header">Categories</h3>
+                <div class="row">
+                    <ul class="list-unstyled" style="padding-left:15px;">
+                        <li ng-repeat="row in result.facets.category | limitTo:10" ng-include="'cat_tree.html'"></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div ng-show="result.facets.brand" class="facet_block">
+                <h3 class="facet_header">Brand</h3>
+                <ul class="list-unstyled">
+                    <li ng-repeat="row in result.facets.brand">
+                        <input type="checkbox" checklist-model="fs.facet.brand" checklist-value="row.id"> <span>{{row.text}}</span>
+                        ({{row.count}})
+                    </li>
+                </ul>
+            </div>
+
+            <div ng-show="result.facets.price.max" class="facet_block">
+                <h3 class="facet_header">Price Range</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div>min: {{result.facets.price.min}}</div>
+                        <input type="text" id="price_min" ng-model="fs.filter.price_min" class="form-control"
+                               placeholder="min price">
+                    </div>
+                    <div class="col-md-6">
+                        <div>max: {{result.facets.price.max}}</div>
+                        <input type="text" id="price_max" ng-model="fs.filter.price_max" class="form-control"
+                               placeholder="max price">
+                    </div>
+                </div>
+            </div>
+
+            <div ng-repeat="(facetKey, data) in result.facets"
+                 ng-if="facetKey!='price' && facetKey!='category' && facetKey!='brand'" class="facet_block">
+                <h3 class="facet_header">{{facetKey | faceter }}</h3>
+                <ul class="list-unstyled">
+                    <li ng-repeat="row in data">
+                        <input type="checkbox" checklist-model="fs.facet[facetKey]" checklist-value="row.text"> <span>{{row.text}}</span>
+                        ({{row.count}})
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-xs-18 col-md-9">
+            <div ng-show="result.dum" class="alert alert-warning" role="alert">
+                Not enough results for <span style="text-decoration: line-through;">{{result.dum.q}}</span>
+        <span ng-show="result.dum.executed">
+          We searched <strong><a href="#">{{result.dum.sq}}</a></strong>
+          <small class="pull-right"><a href="#" ng-click="searchUserQ(result.dum.q)">click to search
+              "{{result.dum.q}}"</a></small>
+        </span>
+        <span ng-hide="result.dum.executed">
+          Did you mean? <strong><a href="#" ng-click="searchUserQ(result.dum.sq)">{{result.dum.sq}}</a></strong>
+        </span>
+            </div>
+
+            <div class="box" ng-show="result.count">
+                <strong>{{result.count}}</strong> products found
+                <!-- open sorting after design fix
+                <span class="pull-right">
+                  <select ng-model="sort" ng-change="search()" class="form-control">
+                    <option value="">Sort By</option>
+                    <option value="relevance">relevance</option>
+                    <option value="price_asc">price asc</option>
+                    <option value="price_desc">price desc</option>
+                  </select>
+                </span>
+              -->
+            </div>
+            <!-- top message boxes end -->
+
+            <!--- search products -->
+            <div class="row" ng-show="result.items">
+                <div class="col-sm-6 col-md-4" ng-repeat="item in result.items">
+                    <div class="thumbnail" title="{{item.sold_count}} / {{item.published_at | date:'yyyy-MM-dd'}}">
+                        <a href="http://{{item.url}}">
+                            <img check-image ng-src="{{item.image}}" ng-show="item.image" style="height:200px;">
+                        </a>
+                        <div style="height:200px;" ng-hide="item.image">
+                            <img ng-src="{{defaultImage}}" ng-show="item.image" style="height:200px;">
+                        </div>
+                        <div class="caption" style="height:108px;">
+                            <div style="height:50px;">
+                                <a href="http://{{item.url}}">{{item.title | limitTo:50}}</a>
+                                <small ng-hide="item.id">{{item.id}}</small>
+                            </div>
+                            <div class="mltdiv"><a ng-click="moreLikeThis(item)">More like this</a></div>
+                            <div>
+                                <span style="color:red">R$ {{item.price.current | number:2 }}</span>
+                                <del ng-show="item.price.previous" style="color:#959595; margin-left:5px;">
+                                    R${{item.price.previous | number:0 }}
+                                </del>
+                                <span style="color:#959595" class="pull-right">{{item.brand.name | limitTo:18 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <nav>
+                <ul class="pagination">
+                    <li>
+                        <a class="btn btn-default" role="button" ng-click="nextPage()" ng-show="hasNextPage()" aria-label="Next">
+                            <span aria-hidden="true">Load Next Page &raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!--- Feeds begin -->
+    <div class="panel panel-default" ng-hide="result.count || noCriteria">
+        <div class="panel-body">
+            Nothing Found for <strong>{{f.q}}</strong>! Please search for something else.
+        </div>
+    </div>
+
+    <div class="row" ng-show="noCriteria || !result.count">
+
+        <div id="noResultsRecentlyViewed" ng-show="!feeds.recentlyviewed && feeds.length">
+            <h2>None recently viewed, visit <a href="http://www.dafiti.com.br">Dafiti</a> to see results for this feed.</h2>
+        </div>
+
+        <!-- iterating each feed -->
+        <div ng-repeat="meta in feedMeta" style="margin-bottom:40px;">
+            <div ng-show="feeds[meta.name].length">
+                <h3 class="facet_header">{{meta.title}}</h3>
+                <div class="row">
+                    <div class="col-sm-6 col-md-3" ng-repeat="item in feeds[meta.name]" ng-include="'feedItem.html'"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--- Feeds end -->
+    <hr/>
+    <div style="margin:30px; color:#e3e3e3;">Demo @2016 Rocket Internet (Discovery Team)</div>
+</div>
+</body>
+</html>
